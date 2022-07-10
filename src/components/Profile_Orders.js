@@ -2,47 +2,37 @@ import { useAuth } from '../contexts/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import '../styles/main.css'
 import { getDatabase, ref, child, get, onValue } from "firebase/database";
-import { auth } from '../firebase';
+import { auth, firestoreDb } from '../firebase';
 import React, { useState, useEffect } from 'react'
+import { collection, query, onSnapshot, where, getDocs, doc } from "firebase/firestore"; 
 
 export default function Profile_Orders() {
 
-    const { currentUser, logout } = useAuth()
-    const navigate = useNavigate()
-    const [name, setName] = useState('loading...')
-    const [orders, setOrders] = useState([])
-    const [error, setError] = useState('')
+    const { currentUser } = useAuth()
+    const [ what , setWhat ] = useState([])
 
-    function getItems() {
-        const db = getDatabase();
-        const starCountRef = ref(db, `users/${auth.currentUser.uid}/orders/`);
+    async function getOrders() {
+        const q = query(collection(firestoreDb, "orders"), where("orderedBy", "==", `${auth.currentUser.uid}`));
+        
+        onSnapshot(q, (querySnapshot) => {
 
-        onValue(starCountRef,
-            (snapshot) => {
-                setOrders([])
-                snapshot.forEach((data) => {
-                    setOrders(orders => [...orders, data.exportVal()]);
+            querySnapshot.forEach((docc) => {
+                const qq = query(collection(firestoreDb, `orders/${docc.data().orderId}/items`));
+
+                onSnapshot(qq, (qquerySnapshot) => {
+                    setWhat([])
+                    qquerySnapshot.forEach((doccc) => {
+                        setWhat(what => [...what, doccc.data()])
+                    });
                 });
-            },
-            (error) => {
-                setError(error)
-                console.log(error);
-            }
-        );
+            });
+        });
     }
 
-    useEffect(() => {
-        const getName = async () => {
-            const dbRef = ref(getDatabase())
-            const res = await get(child(dbRef, `users/${auth.currentUser.uid}`))
-            if (res.exists()) {
-                const name = res.val().username + " " + res.val().userlastname
-            setName(name)
-            }
-        }
-        getName()
-        getItems()
 
+    useEffect(() => {
+        //getItems()
+        getOrders()
     }, [])
 
     return (
@@ -64,12 +54,11 @@ export default function Profile_Orders() {
                     &nbsp;&nbsp;
                     <div className="profile-vertical-line"></div>
                     <div className='profile-data-div'>
-                        {orders.map((order, index, or) => (
-                            <>
-                                <div>{console.log(or)}</div>
-                                <div>{console.log(order)}</div>
-                            </>
+                        <div className='orders_container'>
+                        {what.map((what) => (
+                            <div>{what.itemName}</div>
                         ))}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -794,7 +794,7 @@ textarea:focus {
 
 .items_item_container {
   min-width: 60vh;
-  overflow: scroll;
+  overflow: auto;
   overflow-x: hidden;
   
 }
@@ -845,4 +845,9 @@ textarea:focus {
 
 .createOrder {
   margin-top: 0;
+}
+
+.orders_container{
+  display: flex;
+  flex-direction: column;
 }

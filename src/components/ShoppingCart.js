@@ -139,6 +139,7 @@ export default function ShoppingCart() {
             const orderData = setDoc(doc(firestoreDb, "orders", `${idGenerator}`), {
                 total: getTotal().replace(",","."),
                 orderedBy: auth.currentUser.uid,
+                orderId: idGenerator
             }, { merge: true });
             const orderData2 = setDoc(doc(firestoreDb, "users", `${auth.currentUser.uid}/orders/${idGenerator}`), {
                 orderId: idGenerator
